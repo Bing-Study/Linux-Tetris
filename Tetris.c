@@ -64,7 +64,7 @@ int judgeMove(int cmd);
 void lastInBlock(); 
 void printNext();
 void clearNext();
-void change();
+int judgeChange();
 
 void alarmHandler(int s){
 	if(judgeMove(DOWN)){
@@ -135,7 +135,8 @@ int main(void)
 
 			case 'w':
 			case 'W':
-				change();
+				if(judgeChange())
+					execCmd(UP);
 				break;
 
 		}
@@ -417,6 +418,8 @@ void cancelState(int state){	//
 		case DOWN:
 			last_row = -1;
 			break;
+		case UP:
+			cur_change=(cur_change+1)%Change;
 		default :break;
 
 	}
@@ -498,7 +501,20 @@ void lastInBlock(){
  
  }
 
-void change(){
-	blocks[cur_base][cur_change]= blocks[cur_base][(cur_change+1)%Change];
-	printBlock();
+int judgeChange(){
+	int i,j;
+	int t;
+
+	t=(cur_change+1)%Change;
+
+	for(i=0;i<N;i++){
+		for(j=0;j<N;j++){
+			if(blocks[cur_base][t].space[i][j]){
+				if(Tetris[x+i][y+j]==2)
+					return 0;
+			}
+		}
+	}
+	return 1;
+
 }
