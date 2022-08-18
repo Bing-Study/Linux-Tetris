@@ -41,6 +41,7 @@ int next_base;
 int next_change;
 int next_color;
 
+int score=0;
 
 //color
 int cur_color;
@@ -65,6 +66,11 @@ void lastInBlock();
 void printNext();
 void clearNext();
 int judgeChange();
+int judgeElimate();
+void elimateT(int row);
+void printScore();
+
+
 
 void alarmHandler(int s){
 	if(judgeMove(DOWN)){
@@ -207,8 +213,7 @@ void showBg(){
 		}
 	}
 
-
-	printf ("\033[%d;%dH\033[45m--========================--==============--\033[0m\n",X+Row-1,Y);
+	printf ("\033[%d;%dH\033[45m-=========================--==============--\033[0m\n",X+Row-1,Y);
 
 	//初始化边界 
 	for(i=0;i<Col;i++){
@@ -477,6 +482,7 @@ void lastInBlock(){
 			}
 		}
 	}
+	judgeElimate();
 	printBlock();
 }
 
@@ -485,7 +491,6 @@ void lastInBlock(){
  	int i,j;
 
 	printf("\033[%d;%dH",X+2,Y+31);
-
 	for(i = 0;i < N;i++){
 		for(j = 0;j < N;j++){
 			if(blocks[next_base][next_change].space[i][j]){
@@ -493,7 +498,7 @@ void lastInBlock(){
 				printf("[]\033[0m");
 			}
 			else 
-				printf(" \033[0m");
+				printf("  \033[0m");
 		}
 		printf("\n\033[%dC",Y+30);
 	}
@@ -516,5 +521,46 @@ int judgeChange(){
 		}
 	}
 	return 1;
+
+}
+
+
+int judgeElimate(){
+	int i,j;
+	int flag=0;
+	int t;
+	for(i = Row-2;i > 0;i--){
+		flag=0;
+		for(j = 1;j < Col - 1;j++){
+			if(Tetris[i][j]==2)
+				flag++;
+		}
+		if(flag==Col-2){
+			t=i;
+			elimateT(i);
+			i=t+1;
+		}
+	
+	}
+}
+
+void elimateT(int line){
+	int i,j;
+	for(i = line; i > 1;i--){
+		for(j = 1;j<Col-1;j++){
+			Tetris[i][j]=Tetris[i-1][j];
+		}
+	}
+	for(j=2;j<Col-1;j++){
+		Tetris[1][j]=0;
+	}
+	printScore();
+}
+
+void printScore(){
+	score=score+1;
+	printf("\033[%d;%dH",X+9,Y+31);
+	printf("\033[%dm",42);
+	printf("score:%d",score);
 
 }
