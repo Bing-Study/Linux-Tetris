@@ -46,10 +46,12 @@ int score=0;
 //color
 int cur_color;
 
+int state=1;
+
+
 struct itimerval itv;
 
-
-
+void readme();
 void next();
 void setAlarm();
 void cancelAlarm();
@@ -69,7 +71,8 @@ int judgeChange();
 int judgeElimate();
 void elimateT(int row);
 void printScore();
-
+int endGame();
+void pauseGame();
 
 
 void alarmHandler(int s){
@@ -99,12 +102,12 @@ int main(void)
 	next_change=rand()%Change;
 	next();
 
-	//	debugBlock();
+	//`	debugBlock();
 
 	writeInBlock();
 	printBlock();
-
-
+	readme();
+	
 	tcgetattr(0,&old);
 	new = old;
 	new.c_lflag = new.c_lflag & ~(ICANON | ECHO);
@@ -144,6 +147,16 @@ int main(void)
 				if(judgeChange())
 					execCmd(UP);
 				break;
+			case 'p':
+			case 'P':
+				if(state==0){
+					pauseGame();
+					state=1;
+					}
+				else {
+					pauseGame();
+					state=0;
+				}
 
 		}
 	}
@@ -174,6 +187,13 @@ void next(){
 	next_color=rand()%7;
         printNext();
 
+	if(endGame())
+    	{
+        	printf("\033[15;20H游戏结束");
+        	printf("\n\033[0m");
+        	cancelAlarm();
+        	exit(0);
+    	}
 	printf("\033[%d;2H", Row+X + 5);
 
 }
@@ -344,7 +364,7 @@ void printBlock(){
 				printf("[]\033[0m");
 			}
 			else {
-				printf("*\033[0m ");
+				printf("%d\033[0m ",Tetris[i][j]);
 			}
 		}
 		printf("\n\033[%dC",Y+1);	//ding wei qi shi lie
@@ -375,7 +395,6 @@ void selectColor(int color){
 			n++;
 		case RED:
 			n++;
-		case BLACK:
 			break;
 	}
 
@@ -484,6 +503,10 @@ void lastInBlock(){
 	}
 	judgeElimate();
 	printBlock();
+/*	if(endGame()){
+		exit(0);
+	}*/
+
 }
 
 
@@ -562,5 +585,53 @@ void printScore(){
 	printf("\033[%d;%dH",X+9,Y+31);
 	printf("\033[%dm",42);
 	printf("score:%d",score);
+
+}
+
+int endGame(){
+	int i,j;
+
+	for(j=1; j< Col - 1;j++){
+		if(Tetris[i][j] == 2){
+			return 1;
+		}
+	}
+
+	for(i = 0;i < N;i++){
+		for(j=0;j < N;j++){
+			if(blocks[cur_base][cur_change].space[i][j]){
+				if(Tetris[x+i][y+j]==2){
+					return 1;
+				}
+			}
+		}
+	}
+	return 0;
+
+}
+
+void pauseGame(){
+	
+	if(state==0){
+		cancelAlarm();
+	}
+		
+	else 
+		setAlarm();
+}
+
+void readme(){
+	 printf("\033[%d;%dH",X+13,Y+32);
+	printf("Read me");
+	printf("\033[%d;%dH",X+14,Y+28);
+	printf("W:Change shape\n");
+	 printf("\033[%d;%dH",X+15,Y+28);
+	printf("A:Left\n");
+	 printf("\033[%d;%dH",X+16,Y+28);
+	printf("S:Right\n");
+       	printf("\033[%d;%dH",X+17,Y+28);
+	printf("D:Down\n");
+	 printf("\033[%d;%dH",X+18,Y+28);
+	printf("p:Pause\n");
 
 }
